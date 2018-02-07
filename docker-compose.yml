@@ -1,0 +1,56 @@
+version: '2'
+
+services:
+    php-redis-admin:
+      image: faktiva/php-redis-admin
+      container_name: pra-redis-admin
+      environment:
+      - PHPREDMIN_DATABASE_REDIS_0_HOST=redis
+      ports:
+      - "8080:80"
+      depends_on:
+      - redis
+      restart: always
+
+    redis:
+      image: redis:alpine
+      container_name: pra-redis
+      volumes:
+      - ./redis_data/redis:/data
+      ports:
+      - "6379:6379"
+      restart: always
+
+    mongo:
+      image: mongo
+      container_name: mongodb
+      volumes:
+      - $PWD/mongo_data:/data/db
+      ports:
+      - "27017:27017"
+      restart: always
+
+    solr:
+      image: 2degrees/solr4
+      container_name: solr
+      volumes:
+      - $PWD/your-awesome-core:/etc/opt/solr/cores/your-awesome-core:ro
+      - $PWD/solr_data:/var/opt/solr/indices
+      ports:
+      - "8983:8983"
+      restart: always
+
+    php-web:
+      image: obdev/sweda-docker-client
+      container_name: web-client
+      #volumes:
+      #- $PWD/sweda_web_client:/var/www/app/public_html
+      #- $PWD/conf.d:/etc/httpd/conf.d
+      ports:
+      - "80:80"
+      - "443:443"
+      depends_on:
+      - redis
+      - solr
+      - mongo
+      restart: always
